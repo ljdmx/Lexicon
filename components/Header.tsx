@@ -15,20 +15,35 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, historyCount, uiLang, 
   const [isEnvReady, setIsEnvReady] = useState(false);
 
   useEffect(() => {
-    const checkKey = async () => {
-      if (typeof window !== 'undefined' && window.aistudio) {
+    const checkKeyStatus = async () => {
+      // Priority 1: Check if API_KEY is already available in process.env
+      const envKey = process.env.API_KEY;
+      if (envKey && envKey !== 'undefined' && envKey.length > 5) {
+        setHasKey(true);
         setIsEnvReady(true);
-        try {
-          const selected = await window.aistudio.hasSelectedApiKey();
-          setHasKey(selected);
-        } catch (e) {
-          console.error("Failed to check API key status:", e);
+        return;
+      }
+
+      // Priority 2: Check AI Studio environment bridge
+      if (typeof window !== 'undefined') {
+        if (window.aistudio) {
+          setIsEnvReady(true);
+          try {
+            const selected = await window.aistudio.hasSelectedApiKey();
+            setHasKey(selected);
+          } catch (e) {
+            console.debug("Bridge active but check failed:", e);
+          }
+        } else {
+          // If neither env key nor bridge exists, we are "ready" to show the status (which is offline)
+          setIsEnvReady(true);
         }
       }
     };
     
-    checkKey();
-    const interval = setInterval(checkKey, 2000);
+    checkKeyStatus();
+    // Use a slightly longer interval to reduce noise, or rely on events if available
+    const interval = setInterval(checkKeyStatus, 3000);
     return () => clearInterval(interval);
   }, []);
 
@@ -36,15 +51,16 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, historyCount, uiLang, 
     if (typeof window !== 'undefined' && window.aistudio?.openSelectKey) {
       try {
         await window.aistudio.openSelectKey();
-        // As per guidelines, assume success immediately to mitigate race conditions
+        // Optimistically assume success per guidelines
         setHasKey(true);
       } catch (e) {
         console.error("Failed to open key selection dialog:", e);
-        alert("Unable to open API Key config. Please ensure you are in the correct environment.");
       }
     } else {
-      console.warn("window.aistudio.openSelectKey is not available in this environment.");
-      alert("API Configuration is only available in the AI Studio environment.");
+      const msg = uiLang === 'zh' 
+        ? "当前处于本地部署环境。请在启动前通过环境变量设置 API_KEY (例如: export API_KEY=...)，或者在 Google AI Studio 中运行此应用。"
+        : "Local environment detected. Please set API_KEY via environment variables (e.g., export API_KEY=...) before starting, or run this app within Google AI Studio.";
+      alert(msg);
     }
   };
 
@@ -79,7 +95,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, historyCount, uiLang, 
             <button 
               onClick={handleKeyConfig}
               className={`flex items-center gap-4 group transition-all ${!isEnvReady ? 'opacity-50 cursor-wait' : ''}`}
-              title={isEnvReady ? "Configure API Key" : "Environment Loading..."}
+              title={hasKey ? "API Active" : "Click to Configure"}
             >
               <div className="text-right flex flex-col items-end hidden sm:flex">
                 <span className="text-[8px] font-bold uppercase tracking-[0.3em] text-zinc-500">{t.status}</span>
