@@ -60,15 +60,21 @@ const App: React.FC = () => {
       
       setHistory(prev => [newItem, ...prev].slice(0, 20));
     } catch (err: any) {
-      const errMsg = err.message || "FAILURE";
-      setError(errMsg);
-      
-      // Auto-trigger key selection if auth fails
-      if (errMsg.includes("AUTH_REQUIRED") || errMsg.includes("API_KEY_MISSING")) {
+      const errCode = err.message;
+      let displayError = t.errorGeneral;
+
+      if (errCode === 'AUTH_REQUIRED') {
+        displayError = t.errorAuth;
         if (window.aistudio?.openSelectKey) {
           setTimeout(() => window.aistudio.openSelectKey(), 500);
         }
+      } else if (errCode === 'CONTENT_TOO_LARGE') {
+        displayError = t.errorLimit;
+      } else if (errCode === 'EMPTY_RESPONSE') {
+        displayError = t.errorEmptyResponse;
       }
+
+      setError(displayError);
     } finally {
       setIsTranslating(false);
     }
@@ -89,8 +95,8 @@ const App: React.FC = () => {
           
           {/* Input Panel */}
           <section className="flex-1 flex flex-col min-w-0 animate-reveal" style={{ animationDelay: '0.1s' }}>
-            <div className="flex items-end justify-between mb-12 pb-8 border-b border-zinc-100">
-              <div className="space-y-4">
+            <div className="flex items-center justify-between h-16 mb-12 border-b border-zinc-100 pb-2">
+              <div className="flex items-center">
                 <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.5em]">{t.source}</span>
               </div>
               
@@ -100,7 +106,7 @@ const App: React.FC = () => {
                 <button
                   onClick={handleTranslate}
                   disabled={isTranslating}
-                  className={`text-[10px] font-black uppercase tracking-[0.4em] transition-all hover:text-zinc-500 active:scale-95 disabled:opacity-20 disabled:cursor-not-allowed`}
+                  className={`text-[10px] font-black uppercase tracking-[0.4em] transition-all hover:text-zinc-500 active:scale-95 disabled:opacity-20 disabled:cursor-not-allowed pt-1`}
                 >
                   {isTranslating ? t.translating : t.translate}
                 </button>
@@ -119,8 +125,8 @@ const App: React.FC = () => {
 
           {/* Output Panel */}
           <section className="flex-1 flex flex-col min-w-0 animate-reveal" style={{ animationDelay: '0.3s' }}>
-             <div className="flex items-end justify-between mb-12 pb-8 border-b border-zinc-100">
-              <div className="space-y-4">
+             <div className="flex items-center justify-between h-16 mb-12 border-b border-zinc-100 pb-2">
+              <div className="flex items-center">
                 <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.5em]">{t.result}</span>
               </div>
             </div>

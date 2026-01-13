@@ -27,7 +27,7 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({ value, onChange }) 
     <div className="relative" ref={containerRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-6 text-[10px] font-bold uppercase tracking-[0.4em] py-2 border-b border-transparent hover:border-zinc-200 transition-all group"
+        className="flex items-center gap-6 text-[10px] font-bold uppercase tracking-[0.4em] py-1 border-b border-transparent hover:border-zinc-200 transition-all group"
       >
         <span className="text-zinc-900 group-hover:opacity-60">{currentLang.name}</span>
         <svg 

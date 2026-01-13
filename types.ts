@@ -56,7 +56,11 @@ export const UI_STRINGS = {
     apiKeyPlaceholder: "ENTER GEMINI KEY...",
     saveKey: "CONFIRM KEY",
     keyStored: "KEY STORED LOCALLY",
-    close: "CLOSE"
+    close: "CLOSE",
+    errorAuth: "AUTHENTICATION FAILED. CHECK KEY.",
+    errorLimit: "CONTENT EXCEEDS PROCESSING LIMIT.",
+    errorGeneral: "TRANSLATION FAILED. TRY AGAIN.",
+    errorEmptyResponse: "AI RETURNED NULL RESPONSE."
   },
   zh: {
     appName: "LEXICON",
@@ -85,6 +89,10 @@ export const UI_STRINGS = {
     apiKeyPlaceholder: "输入密钥...",
     saveKey: "保存配置",
     keyStored: "密钥已保存至本地",
-    close: "关闭"
+    close: "关闭",
+    errorAuth: "鉴权失败，请检查 API 密钥",
+    errorLimit: "文本内容过多，超出处理限制",
+    errorGeneral: "翻译执行失败，请重试",
+    errorEmptyResponse: "AI 服务返回了空响应"
   }
 };
