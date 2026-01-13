@@ -14,11 +14,17 @@ export class GeminiService {
   }
 
   async translateContent(content: string, targetLanguage: string): Promise<string> {
-    // CRITICAL: Create a new instance right before the call to pick up latest API key
-    const apiKey = process.env.API_KEY;
+    // CRITICAL: Order of precedence for API keys:
+    // 1. process.env.API_KEY (System/Dev setting)
+    // 2. localStorage (Manual User Config)
+    let apiKey = process.env.API_KEY;
+    
+    if (!apiKey || apiKey === 'undefined') {
+      apiKey = localStorage.getItem('lexicon_manual_api_key') || '';
+    }
     
     if (!apiKey) {
-      throw new Error("API_KEY_MISSING: Please configure your API key in the top-right corner.");
+      throw new Error("AUTH_REQUIRED: Please configure your API key by clicking the status icon.");
     }
 
     const ai = new GoogleGenAI({ apiKey });
@@ -51,8 +57,7 @@ STRICT CONSTRAINTS:
     } catch (error: any) {
       console.error("Gemini Communication Error:", error);
       
-      // Pass through specific error for UI handling
-      if (error.message?.includes("Requested entity was not found") || error.message?.includes("API_KEY_INVALID")) {
+      if (error.message?.includes("Requested entity was not found") || error.message?.includes("API_KEY_INVALID") || error.message?.includes("invalid API key")) {
         throw new Error("AUTH_REQUIRED: Your API key is invalid or has expired. Re-configuration required.");
       }
       

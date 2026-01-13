@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { UILang } from '../types';
 
 interface HeaderProps {
@@ -13,10 +13,13 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ onToggleSidebar, historyCount, uiLang, onUiLangChange, t }) => {
   const [hasKey, setHasKey] = useState(false);
   const [isEnvReady, setIsEnvReady] = useState(false);
+  const [showManualInput, setShowManualInput] = useState(false);
+  const [manualKey, setManualKey] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const checkKeyStatus = async () => {
-      // Priority 1: Check if API_KEY is already available in process.env
+      // Priority 1: Check process.env
       const envKey = process.env.API_KEY;
       if (envKey && envKey !== 'undefined' && envKey.length > 5) {
         setHasKey(true);
@@ -24,7 +27,15 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, historyCount, uiLang, 
         return;
       }
 
-      // Priority 2: Check AI Studio environment bridge
+      // Priority 2: Check LocalStorage (Manual Override)
+      const localKey = localStorage.getItem('lexicon_manual_api_key');
+      if (localKey && localKey.length > 5) {
+        setHasKey(true);
+        setIsEnvReady(true);
+        return;
+      }
+
+      // Priority 3: Check AI Studio Bridge
       if (typeof window !== 'undefined') {
         if (window.aistudio) {
           setIsEnvReady(true);
@@ -35,14 +46,12 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, historyCount, uiLang, 
             console.debug("Bridge active but check failed:", e);
           }
         } else {
-          // If neither env key nor bridge exists, we are "ready" to show the status (which is offline)
           setIsEnvReady(true);
         }
       }
     };
     
     checkKeyStatus();
-    // Use a slightly longer interval to reduce noise, or rely on events if available
     const interval = setInterval(checkKeyStatus, 3000);
     return () => clearInterval(interval);
   }, []);
@@ -51,22 +60,31 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, historyCount, uiLang, 
     if (typeof window !== 'undefined' && window.aistudio?.openSelectKey) {
       try {
         await window.aistudio.openSelectKey();
-        // Optimistically assume success per guidelines
         setHasKey(true);
       } catch (e) {
         console.error("Failed to open key selection dialog:", e);
       }
     } else {
-      const msg = uiLang === 'zh' 
-        ? "当前处于本地部署环境。请在启动前通过环境变量设置 API_KEY (例如: export API_KEY=...)，或者在 Google AI Studio 中运行此应用。"
-        : "Local environment detected. Please set API_KEY via environment variables (e.g., export API_KEY=...) before starting, or run this app within Google AI Studio.";
-      alert(msg);
+      // Fallback: Manual Input
+      setShowManualInput(!showManualInput);
+      if (!showManualInput) {
+        setTimeout(() => inputRef.current?.focus(), 100);
+      }
+    }
+  };
+
+  const saveManualKey = () => {
+    if (manualKey.trim().length > 5) {
+      localStorage.setItem('lexicon_manual_api_key', manualKey.trim());
+      setHasKey(true);
+      setShowManualInput(false);
+      alert(t.keyStored);
     }
   };
 
   return (
     <header className="h-24 md:h-32 flex items-center px-8 md:px-16 border-b border-zinc-100 sticky top-0 glass z-40">
-      <div className="max-w-[2000px] mx-auto w-full flex items-center justify-between">
+      <div className="max-w-[2000px] mx-auto w-full flex items-center justify-between relative">
         <div className="flex items-center gap-12 md:gap-16">
           <div className="text-xl md:text-2xl font-bold tracking-[-0.06em] cursor-default flex items-center gap-2">
             LEXICON<span className="font-extralight text-zinc-400 text-lg">®</span>
@@ -124,6 +142,40 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, historyCount, uiLang, 
             </button>
           </div>
         </div>
+
+        {/* Manual Key Input Modal */}
+        {showManualInput && (
+          <div className="absolute right-0 top-full mt-6 w-80 glass border border-zinc-100 dropdown-shadow p-8 z-50 animate-reveal origin-top-right">
+            <div className="space-y-6">
+              <div className="space-y-1">
+                <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.3em]">{t.apiKeyTitle}</h3>
+                <p className="text-[9px] text-zinc-400 leading-relaxed uppercase tracking-widest">GEMINI PRO / FLASH</p>
+              </div>
+              <input
+                ref={inputRef}
+                type="password"
+                value={manualKey}
+                onChange={(e) => setManualKey(e.target.value)}
+                placeholder={t.apiKeyPlaceholder}
+                className="w-full bg-zinc-50 border-0 border-b border-zinc-100 p-3 text-xs font-mono outline-none focus:border-black transition-colors"
+              />
+              <div className="flex gap-4">
+                <button
+                  onClick={saveManualKey}
+                  className="flex-1 bg-black text-white text-[9px] font-black uppercase tracking-[0.3em] py-3 hover:bg-zinc-800 transition-colors"
+                >
+                  {t.saveKey}
+                </button>
+                <button
+                   onClick={() => setShowManualInput(false)}
+                   className="px-4 text-[9px] font-bold uppercase tracking-[0.3em] text-zinc-400 hover:text-black transition-colors"
+                >
+                  X
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </header>
   );
