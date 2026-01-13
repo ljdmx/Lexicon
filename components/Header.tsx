@@ -12,23 +12,39 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onToggleSidebar, historyCount, uiLang, onUiLangChange, t }) => {
   const [hasKey, setHasKey] = useState(false);
+  const [isEnvReady, setIsEnvReady] = useState(false);
 
   useEffect(() => {
     const checkKey = async () => {
-      if (window.aistudio?.hasSelectedApiKey) {
-        const selected = await window.aistudio.hasSelectedApiKey();
-        setHasKey(selected);
+      if (typeof window !== 'undefined' && window.aistudio) {
+        setIsEnvReady(true);
+        try {
+          const selected = await window.aistudio.hasSelectedApiKey();
+          setHasKey(selected);
+        } catch (e) {
+          console.error("Failed to check API key status:", e);
+        }
       }
     };
+    
     checkKey();
     const interval = setInterval(checkKey, 2000);
     return () => clearInterval(interval);
   }, []);
 
   const handleKeyConfig = async () => {
-    if (window.aistudio?.openSelectKey) {
-      await window.aistudio.openSelectKey();
-      setHasKey(true);
+    if (typeof window !== 'undefined' && window.aistudio?.openSelectKey) {
+      try {
+        await window.aistudio.openSelectKey();
+        // As per guidelines, assume success immediately to mitigate race conditions
+        setHasKey(true);
+      } catch (e) {
+        console.error("Failed to open key selection dialog:", e);
+        alert("Unable to open API Key config. Please ensure you are in the correct environment.");
+      }
+    } else {
+      console.warn("window.aistudio.openSelectKey is not available in this environment.");
+      alert("API Configuration is only available in the AI Studio environment.");
     }
   };
 
@@ -62,7 +78,8 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, historyCount, uiLang, 
           <div className="flex items-center gap-6 md:gap-10 border-l border-zinc-100 pl-8 md:pl-12 h-10">
             <button 
               onClick={handleKeyConfig}
-              className="flex items-center gap-4 group transition-all"
+              className={`flex items-center gap-4 group transition-all ${!isEnvReady ? 'opacity-50 cursor-wait' : ''}`}
+              title={isEnvReady ? "Configure API Key" : "Environment Loading..."}
             >
               <div className="text-right flex flex-col items-end hidden sm:flex">
                 <span className="text-[8px] font-bold uppercase tracking-[0.3em] text-zinc-500">{t.status}</span>
@@ -70,7 +87,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, historyCount, uiLang, 
                   {hasKey ? t.connected : t.unset}
                 </span>
               </div>
-              <div className={`w-10 h-10 rounded-full border border-zinc-200 flex items-center justify-center transition-all group-hover:border-black ${hasKey ? 'bg-black border-black' : ''}`}>
+              <div className={`w-10 h-10 rounded-full border border-zinc-200 flex items-center justify-center transition-all group-hover:border-black ${hasKey ? 'bg-black border-black shadow-lg shadow-black/10' : 'bg-transparent'}`}>
                  <svg className={`w-4 h-4 ${hasKey ? 'text-white' : 'text-zinc-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
                  </svg>

@@ -14,10 +14,15 @@ export class GeminiService {
   }
 
   async translateContent(content: string, targetLanguage: string): Promise<string> {
-    // Strictly follow SDK initialization rules
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    // CRITICAL: Create a new instance right before the call to pick up latest API key
+    const apiKey = process.env.API_KEY;
     
-    // System instruction separates the logic from the data, improving reliability
+    if (!apiKey) {
+      throw new Error("API_KEY_MISSING: Please configure your API key in the top-right corner.");
+    }
+
+    const ai = new GoogleGenAI({ apiKey });
+    
     const systemInstruction = `You are a professional localization engine for technical and structured data.
 Translate the natural language values in the provided input into ${targetLanguage}.
 
@@ -34,7 +39,6 @@ STRICT CONSTRAINTS:
         config: {
           systemInstruction: systemInstruction,
           temperature: 0,
-          // Removed responseMimeType to handle flexible formats (XML/JSON/Markdown)
         },
       });
 
@@ -45,8 +49,13 @@ STRICT CONSTRAINTS:
       
       return text;
     } catch (error: any) {
-      console.error("Gemini Internal Communication Error:", error);
-      // Re-throw a more user-friendly error message
+      console.error("Gemini Communication Error:", error);
+      
+      // Pass through specific error for UI handling
+      if (error.message?.includes("Requested entity was not found") || error.message?.includes("API_KEY_INVALID")) {
+        throw new Error("AUTH_REQUIRED: Your API key is invalid or has expired. Re-configuration required.");
+      }
+      
       throw new Error(error.message || "Failed to communicate with AI service.");
     }
   }

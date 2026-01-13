@@ -60,7 +60,15 @@ const App: React.FC = () => {
       
       setHistory(prev => [newItem, ...prev].slice(0, 20));
     } catch (err: any) {
-      setError(err.message || "FAILURE");
+      const errMsg = err.message || "FAILURE";
+      setError(errMsg);
+      
+      // Auto-trigger key selection if auth fails
+      if (errMsg.includes("AUTH_REQUIRED") || errMsg.includes("API_KEY_MISSING")) {
+        if (window.aistudio?.openSelectKey) {
+          setTimeout(() => window.aistudio.openSelectKey(), 500);
+        }
+      }
     } finally {
       setIsTranslating(false);
     }
