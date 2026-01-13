@@ -1,0 +1,5 @@
+{
+  "name": "JSON Structured Translator",
+  "description": "A high-performance tool for translating JSON content into multiple languages while strictly preserving original structures and keys using Gemini API.",
+  "requestFramePermissions": []
+}
