@@ -19,7 +19,6 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, historyCount, uiLang, 
 
   useEffect(() => {
     const checkKeyStatus = async () => {
-      // Priority 1: Check process.env
       const envKey = process.env.API_KEY;
       if (envKey && envKey !== 'undefined' && envKey.length > 5) {
         setHasKey(true);
@@ -27,7 +26,6 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, historyCount, uiLang, 
         return;
       }
 
-      // Priority 2: Check LocalStorage (Manual Override)
       const localKey = localStorage.getItem('lexicon_manual_api_key');
       if (localKey && localKey.length > 5) {
         setHasKey(true);
@@ -35,7 +33,6 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, historyCount, uiLang, 
         return;
       }
 
-      // Priority 3: Check AI Studio Bridge
       if (typeof window !== 'undefined') {
         if (window.aistudio) {
           setIsEnvReady(true);
@@ -65,10 +62,9 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, historyCount, uiLang, 
         console.error("Failed to open key selection dialog:", e);
       }
     } else {
-      // Fallback: Manual Input
       setShowManualInput(!showManualInput);
       if (!showManualInput) {
-        setTimeout(() => inputRef.current?.focus(), 100);
+        setTimeout(() => inputRef.current?.focus(), 150);
       }
     }
   };
@@ -78,7 +74,6 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, historyCount, uiLang, 
       localStorage.setItem('lexicon_manual_api_key', manualKey.trim());
       setHasKey(true);
       setShowManualInput(false);
-      alert(t.keyStored);
     }
   };
 
@@ -112,8 +107,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, historyCount, uiLang, 
           <div className="flex items-center gap-6 md:gap-10 border-l border-zinc-100 pl-8 md:pl-12 h-10">
             <button 
               onClick={handleKeyConfig}
-              className={`flex items-center gap-4 group transition-all ${!isEnvReady ? 'opacity-50 cursor-wait' : ''}`}
-              title={hasKey ? "API Active" : "Click to Configure"}
+              className={`flex items-center gap-4 group transition-all relative ${!isEnvReady ? 'opacity-50 cursor-wait' : ''}`}
             >
               <div className="text-right flex flex-col items-end hidden sm:flex">
                 <span className="text-[8px] font-bold uppercase tracking-[0.3em] text-zinc-500">{t.status}</span>
@@ -143,34 +137,44 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, historyCount, uiLang, 
           </div>
         </div>
 
-        {/* Manual Key Input Modal */}
+        {/* Premium Manual Key Input Modal */}
         {showManualInput && (
-          <div className="absolute right-0 top-full mt-6 w-80 glass border border-zinc-100 dropdown-shadow p-8 z-50 animate-reveal origin-top-right">
-            <div className="space-y-6">
-              <div className="space-y-1">
-                <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.3em]">{t.apiKeyTitle}</h3>
-                <p className="text-[9px] text-zinc-400 leading-relaxed uppercase tracking-widest">GEMINI PRO / FLASH</p>
+          <div className="absolute right-0 top-full mt-6 w-[360px] glass border border-zinc-100 dropdown-shadow p-0 z-50 animate-reveal origin-top-right overflow-hidden rounded-sm">
+            <div className="bg-zinc-50/50 p-8 border-b border-zinc-100">
+               <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-[10px] font-bold text-zinc-900 uppercase tracking-[0.4em]">{t.apiKeyTitle}</h3>
+                  <span className="text-[8px] font-medium text-zinc-400 tracking-tighter italic">GEMINI PRO / FLASH</span>
+               </div>
+               <p className="text-[9px] text-zinc-400 leading-relaxed uppercase tracking-widest opacity-60">
+                 {uiLang === 'zh' ? '密钥将加密存储在您的浏览器本地' : 'KEY WILL BE STORED LOCALLY IN BROWSER'}
+               </p>
+            </div>
+            
+            <div className="p-8 space-y-8 bg-white">
+              <div className="relative group">
+                <input
+                  ref={inputRef}
+                  type="password"
+                  value={manualKey}
+                  onChange={(e) => setManualKey(e.target.value)}
+                  placeholder={t.apiKeyPlaceholder}
+                  className="w-full bg-transparent border-0 border-b border-zinc-100 py-4 text-sm font-mono outline-none focus:border-black transition-all placeholder:text-zinc-200"
+                />
+                <div className="absolute bottom-0 left-0 h-px bg-black w-0 group-focus-within:w-full transition-all duration-700"></div>
               </div>
-              <input
-                ref={inputRef}
-                type="password"
-                value={manualKey}
-                onChange={(e) => setManualKey(e.target.value)}
-                placeholder={t.apiKeyPlaceholder}
-                className="w-full bg-zinc-50 border-0 border-b border-zinc-100 p-3 text-xs font-mono outline-none focus:border-black transition-colors"
-              />
-              <div className="flex gap-4">
+
+              <div className="flex flex-col gap-3">
                 <button
                   onClick={saveManualKey}
-                  className="flex-1 bg-black text-white text-[9px] font-black uppercase tracking-[0.3em] py-3 hover:bg-zinc-800 transition-colors"
+                  className="w-full bg-black text-white text-[10px] font-black uppercase tracking-[0.5em] py-5 hover:bg-zinc-800 transition-all active:scale-[0.98]"
                 >
                   {t.saveKey}
                 </button>
                 <button
                    onClick={() => setShowManualInput(false)}
-                   className="px-4 text-[9px] font-bold uppercase tracking-[0.3em] text-zinc-400 hover:text-black transition-colors"
+                   className="w-full py-4 text-[9px] font-bold uppercase tracking-[0.4em] text-zinc-400 hover:text-black transition-colors border border-transparent hover:border-zinc-100"
                 >
-                  X
+                  {t.close}
                 </button>
               </div>
             </div>

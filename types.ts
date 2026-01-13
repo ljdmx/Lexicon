@@ -51,7 +51,12 @@ export const UI_STRINGS = {
     status: "API STATUS",
     connected: "ACTIVE",
     unset: "OFFLINE",
-    items: "ENTRIES"
+    items: "ENTRIES",
+    apiKeyTitle: "CONFIGURATION",
+    apiKeyPlaceholder: "ENTER GEMINI KEY...",
+    saveKey: "CONFIRM KEY",
+    keyStored: "KEY STORED LOCALLY",
+    close: "CLOSE"
   },
   zh: {
     appName: "LEXICON",
@@ -75,6 +80,11 @@ export const UI_STRINGS = {
     status: "接口状态",
     connected: "活跃",
     unset: "未就绪",
-    items: "项记录"
+    items: "项记录",
+    apiKeyTitle: "配置中心",
+    apiKeyPlaceholder: "输入密钥...",
+    saveKey: "保存配置",
+    keyStored: "密钥已保存至本地",
+    close: "关闭"
   }
 };
