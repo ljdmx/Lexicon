@@ -38,9 +38,6 @@ $env:API_KEY="您的_GEMINI_API_KEY"
 npx serve .
 ```
 
-#### B. 在 AI Studio 中运行
-直接将代码上传至 [Google AI Studio](https://aistudio.google.com/) 的新项目或 Frame 环境中，右上角的“接口状态”按钮将自动启用官方 Key 选择器。
-
 ### 2. 运行项目
 使用任何静态服务器运行项目根目录：
 ```bash

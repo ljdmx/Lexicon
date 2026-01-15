@@ -78,25 +78,28 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, historyCount, uiLang, 
   };
 
   return (
-    <header className="h-24 md:h-32 flex items-center px-8 md:px-16 border-b border-zinc-100 sticky top-0 glass z-40">
-      <div className="max-w-[2000px] mx-auto w-full flex items-center justify-between relative">
-        <div className="flex items-center gap-12 md:gap-16">
-          <div className="text-xl md:text-2xl font-bold tracking-[-0.06em] cursor-default flex items-center gap-2">
-            LEXICON<span className="font-extralight text-zinc-400 text-lg">®</span>
+    <header className="h-20 md:h-32 flex items-center px-5 md:px-16 border-b border-zinc-50 sticky top-0 glass z-40">
+      <div className="max-w-[2000px] mx-auto w-full flex items-center justify-between">
+        {/* Brand Group */}
+        <div className="flex items-center">
+          <div className="text-lg md:text-2xl font-bold tracking-[-0.08em] flex items-center gap-1 select-none">
+            LEXICON<span className="font-extralight text-zinc-300 text-[10px] md:text-lg">®</span>
           </div>
           <div className="hidden xl:flex flex-col border-l border-zinc-200 pl-8 h-8 justify-center">
             <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-[0.5em]">{t.subtitle}</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-8 md:gap-16">
-          <div className="flex gap-8">
+        {/* Global Action Group: Prevents overlap by grouping right-side elements */}
+        <div className="flex items-center gap-2 md:gap-16">
+          {/* UI Language Toggles: Minimalist & compact for mobile */}
+          <div className="flex gap-2 md:gap-8 mr-1 md:mr-0 items-center">
             {(['zh', 'en'] as UILang[]).map((lang) => (
               <button
                 key={lang}
                 onClick={() => onUiLangChange(lang)}
-                className={`text-[10px] font-bold uppercase tracking-[0.4em] transition-all hover:text-black ${
-                  uiLang === lang ? 'text-black border-b border-black' : 'text-zinc-400'
+                className={`text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] transition-all py-2 px-1 ${
+                  uiLang === lang ? 'text-black border-b border-black' : 'text-zinc-200 hover:text-zinc-400'
                 }`}
               >
                 {lang === 'zh' ? 'ZH' : 'EN'}
@@ -104,75 +107,62 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, historyCount, uiLang, 
             ))}
           </div>
 
-          <div className="flex items-center gap-6 md:gap-10 border-l border-zinc-100 pl-8 md:pl-12 h-10">
+          <div className="flex items-center gap-2 md:gap-10 md:border-l border-zinc-100 md:pl-12 h-10">
+            {/* Status & Key Toggle */}
             <button 
               onClick={handleKeyConfig}
-              className={`flex items-center gap-4 group transition-all relative ${!isEnvReady ? 'opacity-50 cursor-wait' : ''}`}
+              className="w-9 h-9 md:w-11 md:h-11 rounded-full border border-zinc-100 flex items-center justify-center transition-all hover:border-black active:scale-90"
             >
-              <div className="text-right flex flex-col items-end hidden sm:flex">
-                <span className="text-[8px] font-bold uppercase tracking-[0.3em] text-zinc-500">{t.status}</span>
-                <span className={`text-[9px] font-bold ${hasKey ? 'text-black' : 'text-zinc-400 animate-pulse'}`}>
-                  {hasKey ? t.connected : t.unset}
-                </span>
-              </div>
-              <div className={`w-10 h-10 rounded-full border border-zinc-200 flex items-center justify-center transition-all group-hover:border-black ${hasKey ? 'bg-black border-black shadow-lg shadow-black/10' : 'bg-transparent'}`}>
-                 <svg className={`w-4 h-4 ${hasKey ? 'text-white' : 'text-zinc-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                 </svg>
-              </div>
+               <svg className={`w-3.5 h-3.5 md:w-4 md:h-4 ${hasKey ? 'text-black' : 'text-zinc-300'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+               </svg>
             </button>
 
+            {/* Archive / History */}
             <button 
               onClick={onToggleSidebar}
-              className="group flex items-center gap-4 transition-all"
+              className="w-9 h-9 md:w-11 md:h-11 rounded-full border border-zinc-100 flex items-center justify-center hover:border-black transition-all active:scale-90 relative"
             >
-              <div className="text-right flex flex-col items-end hidden sm:flex">
-                <span className="text-[8px] font-bold uppercase tracking-[0.3em] text-zinc-500">{t.history}</span>
-                <span className="text-[9px] font-bold text-black mt-0.5">{historyCount} {t.items}</span>
-              </div>
-              <div className="w-10 h-10 rounded-full border border-zinc-200 flex items-center justify-center group-hover:border-black transition-colors">
-                 <div className="w-1.5 h-1.5 bg-black rounded-full"></div>
-              </div>
+               <div className="w-1 h-1 bg-black rounded-full"></div>
+               {historyCount > 0 && (
+                 <div className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-black text-white text-[7px] flex items-center justify-center rounded-full font-black border-2 border-white">
+                   {historyCount}
+                 </div>
+               )}
             </button>
           </div>
         </div>
 
-        {/* Premium Manual Key Input Modal */}
+        {/* Configuration Overlay */}
         {showManualInput && (
-          <div className="absolute right-0 top-full mt-6 w-[360px] glass border border-zinc-100 dropdown-shadow p-0 z-50 animate-reveal origin-top-right overflow-hidden rounded-sm">
-            <div className="bg-zinc-50/50 p-8 border-b border-zinc-100">
-               <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-[10px] font-bold text-zinc-900 uppercase tracking-[0.4em]">{t.apiKeyTitle}</h3>
-                  <span className="text-[8px] font-medium text-zinc-400 tracking-tighter italic">GEMINI PRO / FLASH</span>
-               </div>
-               <p className="text-[9px] text-zinc-400 leading-relaxed uppercase tracking-widest opacity-60">
-                 {uiLang === 'zh' ? '密钥将加密存储在您的浏览器本地' : 'KEY WILL BE STORED LOCALLY IN BROWSER'}
-               </p>
-            </div>
-            
+          <div className="absolute right-0 top-full mt-4 w-[calc(100vw-40px)] md:w-[380px] glass border border-zinc-100 shadow-2xl z-50 animate-reveal origin-top-right rounded-sm overflow-hidden">
             <div className="p-8 space-y-8 bg-white">
-              <div className="relative group">
-                <input
-                  ref={inputRef}
-                  type="password"
-                  value={manualKey}
-                  onChange={(e) => setManualKey(e.target.value)}
-                  placeholder={t.apiKeyPlaceholder}
-                  className="w-full bg-transparent border-0 border-b border-zinc-100 py-4 text-sm font-mono outline-none focus:border-black transition-all placeholder:text-zinc-200"
-                />
-                <div className="absolute bottom-0 left-0 h-px bg-black w-0 group-focus-within:w-full transition-all duration-700"></div>
-              </div>
+               <div>
+                  <h3 className="text-[10px] font-bold text-zinc-900 uppercase tracking-[0.4em] mb-2">{t.apiKeyTitle}</h3>
+                  <p className="text-[9px] text-zinc-400 uppercase tracking-widest opacity-60">
+                    {uiLang === 'zh' ? '密钥将加密存储在您的浏览器本地' : 'KEY WILL BE STORED LOCALLY'}
+                  </p>
+               </div>
 
-              <div className="flex flex-col gap-3">
+              <input
+                ref={inputRef}
+                type="password"
+                value={manualKey}
+                onChange={(e) => setManualKey(e.target.value)}
+                placeholder={t.apiKeyPlaceholder}
+                className="w-full bg-transparent border-0 border-b border-zinc-100 py-4 text-sm font-mono outline-none focus:border-black transition-all placeholder:text-zinc-100"
+              />
+
+              <div className="flex flex-col gap-2">
                 <button
                   onClick={saveManualKey}
-                  className="w-full bg-black text-white text-[10px] font-black uppercase tracking-[0.5em] py-5 hover:bg-zinc-800 transition-all active:scale-[0.98]"
+                  className="w-full bg-black text-white text-[10px] font-black uppercase tracking-[0.4em] py-5 hover:bg-zinc-800 transition-all active:scale-[0.98]"
                 >
                   {t.saveKey}
                 </button>
                 <button
                    onClick={() => setShowManualInput(false)}
-                   className="w-full py-4 text-[9px] font-bold uppercase tracking-[0.4em] text-zinc-400 hover:text-black transition-colors border border-transparent hover:border-zinc-100"
+                   className="w-full py-4 text-[9px] font-bold uppercase tracking-[0.4em] text-zinc-300 hover:text-black transition-colors"
                 >
                   {t.close}
                 </button>
